@@ -6,27 +6,36 @@ from geocomp import config
 
 class SegmentPoint():
     def __init__(self, segment, seg_number, is_left):
-        self.segment = segment
-        self.seg_number = seg_number
-        self.is_left = is_left
+        self.__segment = segment
+        self.__seg_number = seg_number
+        self.__is_left = is_left
 
-    def __lt__(self, other):
-        self_point = self.segment.init.x if self.is_left else self.segment.to.x
-        other_point = other.segment.init.x if other.is_left else other.segment.to.x
+    @property
+    def segment(self):
+        return self.__segment
 
-        if self_point < other_point:
-            return True
+    @property
+    def seg_number(self):
+        return self.__seg_number
 
-        return False
+    @property
+    def is_left(self):
+        return self.__is_left
 
-    def __gt__(self, other):
-        self_point = self.segment.init.x if self.is_left else self.segment.to.x
-        other_point = other.segment.init.x if other.is_left else other.segment.to.x
+    def compare_points(self, other, axis="x"):
+        if axis == "x":
+            self_point = self.__segment.init.x if self.__is_left else self.__segment.to.x
+            other_point = other.__segment.init.x if other.__is_left else other.__segment.to.x
+        else:
+            self_point = self.__segment.init.y if self.__is_left else self.__segment.to.y
+            other_point = other.__segment.init.y if other.__is_left else other.__segment.to.y
 
         if self_point > other_point:
-            return True
-
-        return False
+            return 1
+        elif self_point < other_point:
+            return -1
+        else:
+            return 0
 
 
 class EventQueue():
@@ -57,10 +66,10 @@ class EventQueue():
             i = j = k = 0
 
             while i < len(L) and j < len(R):
-                if L[i] < R[j]:
+                if L[i].compare_points(R[j]) == -1:
                     queue[k] = L[i]
                     i += 1
-                elif L[i] > R[j]:
+                elif L[i].compare_points(R[j]) == 1:
                     queue[k] = R[j]
                     j += 1
                 else:
@@ -71,7 +80,7 @@ class EventQueue():
                         queue[k] = R[j]
                         j += 1
                     else:
-                        if L[i].segment.init.y <= R[j].segment.init.y:
+                        if L[i].compare_points(R[j], "y") <= 0:
                             queue[k] = L[i]
                             i += 1
                         else:
@@ -103,14 +112,14 @@ class EventQueue():
 
 
 def Sweep_line(l):
-    a = EventQueue(l)
-    for item in a:
-        if item.is_left:
-            print(repr(item.segment.init) + ' ' +
-                  str(item.seg_number) + 'left\n')
+    event_queue = EventQueue(l)
+    for event_point in event_queue:
+        if event_point.is_left:
+            print(repr(event_point.segment.init) + ' ' +
+                  str(event_point.seg_number) + 'left\n')
         else:
-            print(repr(item.segment.to) + ' ' +
-                  str(item.seg_number) + 'right\n')
+            print(repr(event_point.segment.to) + ' ' +
+                  str(event_point.seg_number) + 'right\n')
 
     filter_segments(l)
     intersections = []
