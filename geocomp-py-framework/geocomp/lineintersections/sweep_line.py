@@ -140,14 +140,17 @@ class BinarySearchTree():
         else:
             current_node = Node(segment)
 
-    def delete(self, current_node, segment):
+    def delete(self, segment):
+        self.root = self.__delete(self.root, segment)
+
+    def __delete(self, current_node, segment):
         if current_node is None:
             return current_node
 
         if current_node.data.has_left(segment.to):
-            current_node.left = self.delete(current_node.left, segment)
+            current_node.left = self.__delete(current_node.left, segment)
         elif not current_node.data.has_left_on(segment.to):
-            current_node.right = self.delete(current_node.right, segment)
+            current_node.right = self.__delete(current_node.right, segment)
         else:
             if current_node.left is None:
                 temp = current_node.right
@@ -158,13 +161,13 @@ class BinarySearchTree():
                 current_node = None
                 return temp
 
-            temp = self.min_node(current_node.right)
+            temp = self.__min_node(current_node.right)
             current_node = temp
-            current_node.right = self.delete(current_node.right, segment)
+            current_node.right = self.__delete(current_node.right, segment)
 
         return current_node
 
-    def min_node(self, root):
+    def __min_node(self, root):
         current_node = root
 
         while current_node.left is not None:
@@ -172,7 +175,10 @@ class BinarySearchTree():
 
         return current_node
 
-    def find_above_below(self, current_node, segment):
+    def find_above_below(self, segment):
+        self.__find_above_below(self.root, segment)
+
+    def __find_above_below(self, current_node, segment):
         if current_node is None:
             return
 
@@ -197,10 +203,10 @@ class BinarySearchTree():
 
         if current_node.data.has_left(segment.to):
             self.below = current_node
-            self.find_above_below(current_node.left, segment)
+            self.__find_above_below(current_node.left, segment)
         else:
             self.above = current_node
-            self.find_above_below(current_node.right, segment)
+            self.__find_above_below(current_node.right, segment)
 
     def reset_above_below_state(self):
         self.above = None
@@ -220,7 +226,7 @@ def sweep_line(input_segments):
             event_point.segment.hilight(color_line="blue", color_point="blue")
             control.sleep()
             bst.insert(event_point.segment)
-            bst.find_above_below(bst.root, event_point.segment)
+            bst.find_above_below(event_point.segment)
             intersect_above = event_point.segment.intersects(
                 bst.above.data) if bst.above is not None else False
             intersect_below = event_point.segment.intersects(
@@ -240,7 +246,7 @@ def sweep_line(input_segments):
                 return True
         elif not event_point.is_left:
             control.sleep()
-            bst.find_above_below(bst.root, event_point.segment)
+            bst.find_above_below(event_point.segment)
             intersect_above_below = bst.below.data.intersects(bst.above.data) if (
                 bst.below is not None and bst.above is not None) else False
 
@@ -253,7 +259,7 @@ def sweep_line(input_segments):
                 return True
 
             event_point.segment.unhilight()
-            bst.delete(bst.root, event_point.segment)
+            bst.delete(event_point.segment)
 
         control.plot_delete(sweep_line_id)
     return False
