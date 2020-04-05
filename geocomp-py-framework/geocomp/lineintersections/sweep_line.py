@@ -127,7 +127,7 @@ class BinarySearchTree():
 
     def __insert(self, current_node, segment):
         if current_node is not None:
-            if prim.left(current_node.data.init, current_node.data.to, segment.init):
+            if current_node.data.has_left(segment.init):
                 if current_node.left is not None:
                     self.__insert(current_node.left, segment)
                 else:
@@ -144,9 +144,9 @@ class BinarySearchTree():
         if current_node is None:
             return current_node
 
-        if prim.left(current_node.data.init, current_node.data.to, segment.to):
+        if current_node.data.has_left(segment.to):
             current_node.left = self.delete(current_node.left, segment)
-        elif not prim.left_on(current_node.data.init, current_node.data.to, segment.to):
+        elif not current_node.data.has_left_on(segment.to):
             current_node.right = self.delete(current_node.right, segment)
         else:
             if current_node.left is None:
@@ -195,14 +195,14 @@ class BinarySearchTree():
 
             return
 
-        if prim.left(current_node.data.init, current_node.data.to, segment.to):
+        if current_node.data.has_left(segment.to):
             self.below = current_node
             self.find_above_below(current_node.left, segment)
         else:
             self.above = current_node
             self.find_above_below(current_node.right, segment)
 
-    def clean_above_below_state(self):
+    def reset_above_below_state(self):
         self.above = None
         self.below = None
 
@@ -211,53 +211,49 @@ def sweep_line(input_segments):
     bst = BinarySearchTree()
     event_queue = EventQueue(input_segments)
 
-    for segment in input_segments:
-        segment.plot()
-
     for event_point in event_queue:
-        event_point.segment.hilight(color_line="blue")
-        control.sleep()
-        bst.clean_above_below_state()
+        sweep_line_id = control.plot_vert_line(
+            event_point.segment.init.x if event_point.is_left else event_point.segment.to.x, color="cyan")
+        bst.reset_above_below_state()
 
         if event_point.is_left:
+            event_point.segment.hilight(color_line="blue", color_point="blue")
+            control.sleep()
             bst.insert(event_point.segment)
             bst.find_above_below(bst.root, event_point.segment)
-            intersect_above = prim.intersect(bst.above.data.init, bst.above.data.to,
-                                             event_point.segment.init, event_point.segment.to) \
-                if bst.above is not None else False
-            intersect_below = prim.intersect(bst.below.data.init, bst.below.data.to,
-                                             event_point.segment.init, event_point.segment.to) \
-                if bst.below is not None else False
+            intersect_above = event_point.segment.intersects(
+                bst.above.data) if bst.above is not None else False
+            intersect_below = event_point.segment.intersects(
+                bst.below.data) if bst.below is not None else False
 
             if (intersect_above or intersect_below):
-                event_point.segment.hilight(color_line="yellow")
+                event_point.segment.hilight(
+                    color_line="yellow", color_point="yellow")
 
                 if intersect_above:
                     bst.above.data.hilight(
-                        color_line="yellow")
+                        color_line="yellow", color_point="yellow")
                 elif intersect_below:
                     bst.below.data.hilight(
-                        color_line="yellow")
-
-                control.sleep()
+                        color_line="yellow", color_point="yellow")
 
                 return True
         elif not event_point.is_left:
+            control.sleep()
             bst.find_above_below(bst.root, event_point.segment)
-            intersect_above_below = prim.intersect(bst.below.data.init, bst.below.data.to,
-                                                   bst.above.data.init, bst.above.data.to) \
-                if (bst.below is not None and bst.above is not None) else False
+            intersect_above_below = bst.below.data.intersects(bst.above.data) if (
+                bst.below is not None and bst.above is not None) else False
 
             if intersect_above_below:
                 bst.above.data.hilight(
-                    color_line="yellow")
+                    color_line="yellow", color_point="yellow")
                 bst.below.data.hilight(
-                    color_line="yellow")
-                control.sleep()
+                    color_line="yellow", color_point="yellow")
 
                 return True
 
+            event_point.segment.unhilight()
             bst.delete(bst.root, event_point.segment)
 
-        event_point.segment.plot()
+        control.plot_delete(sweep_line_id)
     return False
