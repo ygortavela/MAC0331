@@ -1,13 +1,6 @@
 from geocomp.common import point
 from geocomp.common import segment
-
-
-class Face():
-    def __init__(self, edge):
-        self.edge = edge
-
-    def __repr__(self):
-        return '[ faceEdge: ' + repr(self.edge) + ' ]'
+from geocomp.common.prim import left, left_on
 
 
 class Vertex():
@@ -37,27 +30,16 @@ class HalfEdge():
 class DCEL():
     def __init__(self, points):
         self.vertex = []
-        self.face = []
         self.halfEdge = {}
         self.size = len(points)
         self.__initVertex(points)
-        self.__initFace()
         self.__initHalfEdgeTable(points)
-        print(self.vertex[0])
-        a = self.incidentEdges(0)
-        print(a)
 
     def __initVertex(self, points):
         for i in range(self.size):
             previousVertex = self.iterateVertex(i - 1)
             edge = (i, previousVertex)
             self.vertex.append(Vertex(points[i], edge))
-
-    def __initFace(self):
-        initEdge = (0, 1)
-        initTwinEdge = (1, 0)
-        self.face.append(Face(initTwinEdge))
-        self.face.append(Face(initEdge))
 
     def __initHalfEdgeTable(self, points):
         for i in range(self.size):
@@ -76,11 +58,41 @@ class DCEL():
     def iterateVertex(self, i):
         return (i + self.size) % self.size
 
-    def addEdge(self, initVertex, endVertex):
-        pass
+    def addHalfEdge(self, diagonalEdge):
+        revertedDiagonalEdge = self.revertEdgeVertex(diagonalEdge)
+        initIncidentEdges = self.incidentEdgesInCone(diagonalEdge)
+        endIncidentEdges = self.incidentEdgesInCone(revertedDiagonalEdge)
 
-    def inCone(self, diagonalInitVertex, diagonalEndVertex):
-        pass
+        self.halfEdge[diagonalEdge] = HalfEdge(self.vertex[diagonalEdge[0]],
+                                               revertedDiagonalEdge,
+                                               endIncidentEdges[1],
+                                               self.twinEdge(initIncidentEdges[0]))
+        self.halfEdge[revertedDiagonalEdge] = HalfEdge(self.vertex[revertedDiagonalEdge[0]],
+                                                       diagonalEdge,
+                                                       initIncidentEdges[1],
+                                                       self.twinEdge(endIncidentEdges[0]))
+        self.halfEdge[self.twinEdge(
+            initIncidentEdges[0])].nextEdge = diagonalEdge
+        self.halfEdge[endIncidentEdges[1]].previousEdge = diagonalEdge
+        self.halfEdge[self.twinEdge(
+            endIncidentEdges[0])].nextEdge = revertedDiagonalEdge
+        self.halfEdge[initIncidentEdges[1]].previousEdge = revertedDiagonalEdge
+
+    def incidentEdgesInCone(self, diagonalEdge):
+        incidentEdgesList = self.incidentEdges(diagonalEdge[0])
+        edgesInConeList = [incidentEdgesList[0], incidentEdgesList[1]]
+
+        if (len(incidentEdgesList) == 2):
+            return edgesInConeList
+
+        for i in range(len(incidentEdgesList) - 1):
+            edgesInConeList[0] = incidentEdgesList[i]
+            edgesInConeList[1] = incidentEdgesList[i + 1]
+
+            if (self.diagonalInCone(edgesInConeList[0][1], edgesInConeList[1][1], diagonalEdge)):
+                break
+
+        return edgesInConeList
 
     def incidentEdges(self, vertexNumber):
         incidentEdgesList = []
@@ -94,8 +106,25 @@ class DCEL():
 
         return incidentEdgesList
 
+    def diagonalInCone(self, firstVertex, secondVertex, diagonalEdge):
+        i = self.vertexCoordinates(diagonalEdge[0])
+        j = self.vertexCoordinates(diagonalEdge[1])
+        u = self.vertexCoordinates(firstVertex)
+        w = self.vertexCoordinates(secondVertex)
+
+        if (left_on(u, i, w)):
+            return left(i, j, u) and left(j, i, w)
+        else:
+            return not (left_on(i, j, w) and left_on(j, i, u))
+
     def originVertex(self, edge):
         return self.halfEdge[edge].originVertex
+
+    def endVertex(self, edge):
+        return self.originVertex(self.nextEdge(edge))
+
+    def vertexCoordinates(self, vertexNumber):
+        return self.vertex[vertexNumber].coordinates
 
     def twinEdge(self, edge):
         return self.halfEdge[edge].twinEdge
@@ -105,3 +134,6 @@ class DCEL():
 
     def previousEdge(self, edge):
         return self.halfEdge[edge].previousEdge
+
+    def revertEdgeVertex(self, edge):
+        return (edge[1], edge[0])
