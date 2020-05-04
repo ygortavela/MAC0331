@@ -24,7 +24,6 @@ class Trap():
         return (self.leftEdge == other.leftEdge) and (self.topSuppVertex == other.topSuppVertex) and (self.rightEdge == other.rightEdge)
 
     def __lt__(self, other):
-        # if left(other.leftEdge[0].coordinates, other.leftEdge[1].coordinates, self.topSuppVertex.coordinates):
         if self.topSuppVertex.x < other.topSuppVertex.x:
             return True
 
@@ -34,7 +33,6 @@ class Trap():
         return self < other and self == other
 
     def __gt__(self, other):
-        # if not left(other.rightEdge[0].coordinates, other.rightEdge[1].coordinates, self.topSuppVertex.coordinates):
         if self.topSuppVertex.x >= other.topSuppVertex.x:
             return True
 
@@ -238,53 +236,8 @@ class SplayTree:
         t.parent = x
         return x
 
-    # find the node with the minimum key
-
-    def minimum(self, node):
-        while node.left != None:
-            node = node.left
-        return node
-
     # find the node with the maximum key
     def maximum(self, node):
         while node.right != None:
             node = node.right
         return node
-
-    # find the successor of a given node
-    def successor(self, x):
-        # if the right subtree is not null,
-        # the successor is the leftmost node in the
-        # right subtree
-        if x.right != None:
-            return self.minimum(x.right)
-
-        # else it is the lowest ancestor of x whose
-        # left child is also an ancestor of x.
-        y = x.parent
-        while y != None and x == y.right:
-            x = y
-            y = y.parent
-        return y
-
-    # find the predecessor of a given node
-    def predecessor(self, x):
-        # if the left subtree is not null,
-        # the predecessor is the rightmost node in the
-        # left subtree
-        if x.left != None:
-            return self.maximum(x.left)
-
-        y = x.parent
-        while y != None and x == y.left:
-            x = y
-            y = y.parent
-        return y
-
-    def inorder(self, node):
-        if node is None:
-            return
-
-        self.inorder(node.left)
-        print(node.data)
-        self.inorder(node.right)

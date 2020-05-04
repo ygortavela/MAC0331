@@ -170,6 +170,20 @@ class DCEL():
         else:
             return not (left_on(i, j, w) and left_on(j, i, u))
 
+    def adjacentVertexes(self, vertexNumber):
+        adjacentVertexesList = []
+        startEdge = self.vertex[vertexNumber].incidentEdge
+        halfEdge = startEdge
+        adjacentVertex = self.endVertex(halfEdge)
+        adjacentVertexesList.append(adjacentVertex)
+
+        while (self.nextEdge(self.twinEdge(halfEdge)) != startEdge):
+            halfEdge = self.nextEdge(self.twinEdge(halfEdge))
+            adjacentVertex = self.endVertex(halfEdge)
+            adjacentVertexesList.append(adjacentVertex)
+
+        return adjacentVertexesList
+
     def originVertex(self, edge):
         return self.halfEdge[edge].originVertex
 
@@ -193,3 +207,6 @@ class DCEL():
 
     def revertEdgeVertex(self, edge):
         return (edge[1], edge[0])
+
+    def buildSegmentFromEdge(self, edge):
+        return segment.Segment(edge[0].coordinates, edge[1].coordinates)
