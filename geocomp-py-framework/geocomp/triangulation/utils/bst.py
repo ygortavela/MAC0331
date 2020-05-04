@@ -47,17 +47,17 @@ class Trap():
             '\n rightEdgeTo: ' + repr(self.rightEdge[1]) +\
             '\n topSuppVertex: ' + repr(self.topSuppVertex) + ' ]'
 
-    def trapContainsVertex(self, vertexPoint, testOnlyEdgesAndSupp=False):
+    def trapContainsVertex(self, vertexPoint):
         if (self.topSuppVertex == vertexPoint):
             return True
         elif (vertexPoint == self.leftEdge[0]) or (vertexPoint == self.leftEdge[1]) or \
              (vertexPoint == self.rightEdge[0]) or (vertexPoint == self.rightEdge[1]):
             return True
-
-        if not testOnlyEdgesAndSupp and\
-            (vertexPoint.x >= self.leftEdge[1].x) and (vertexPoint.x <= self.rightEdge[1].x) and \
-            (vertexPoint.y >= self.leftEdge[1].y) and (vertexPoint.y >= self.rightEdge[1].y) and \
-                (vertexPoint.y <= self.leftEdge[0].y) and (vertexPoint.y <= self.rightEdge[0].y):
+        elif (vertexPoint.y <= self.topSuppVertex.y) and \
+            ((vertexPoint.y <= self.leftEdge[0].y) and (vertexPoint.y >= self.leftEdge[1].y) and
+             (vertexPoint.y <= self.rightEdge[0].y) and (vertexPoint.y >= self.rightEdge[1].y)) and \
+            (left_on(self.rightEdge[1].coordinates, self.rightEdge[0].coordinates, vertexPoint.coordinates) and
+             not left(self.leftEdge[1].coordinates, self.leftEdge[0].coordinates, vertexPoint.coordinates)):
             return True
 
         return False
@@ -100,13 +100,8 @@ class SplayTree:
         self.__splay(node)
     # delete the node from the tree
 
-    def getTrapAndRemove(self, vertexPoint, isCaseThree=False):
-        if isCaseThree:
-            trap = self.get(vertexPoint, True)
-            if trap is None:
-                trap = self.get(vertexPoint)
-        else:
-            trap = self.get(vertexPoint)
+    def getTrapAndRemove(self, vertexPoint):
+        trap = self.get(vertexPoint)
 
         if (trap != None):
             self.delete_node(trap)
@@ -152,20 +147,19 @@ class SplayTree:
         self.root = self.__join(s.left, t)
         s = None
 
-    def get(self, vertexPoint, testOnlyEdgesAndSupp=False):
-        return self.__get_helper(self.root, vertexPoint, testOnlyEdgesAndSupp)
+    def get(self, vertexPoint):
+        return self.__get_helper(self.root, vertexPoint)
 
-    def __get_helper(self, node, vertexPoint, testOnlyEdgesAndSupp):
+    def __get_helper(self, node, vertexPoint):
         if node is None:
             return
 
-        if (not testOnlyEdgesAndSupp and node.data.trapContainsVertex(vertexPoint)) or\
-                (testOnlyEdgesAndSupp and node.data.trapContainsVertex(vertexPoint, True)):
+        if node.data.trapContainsVertex(vertexPoint):
             return node.data
         elif vertexPoint.x < node.data.topSuppVertex.x:
-            return self.__get_helper(node.left, vertexPoint, testOnlyEdgesAndSupp)
+            return self.__get_helper(node.left, vertexPoint)
         elif vertexPoint.x > node.data.topSuppVertex.x:
-            return self.__get_helper(node.right, vertexPoint, testOnlyEdgesAndSupp)
+            return self.__get_helper(node.right, vertexPoint)
 
     # rotate left at node x
 

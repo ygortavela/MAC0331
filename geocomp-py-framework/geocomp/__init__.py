@@ -10,7 +10,6 @@ Sub-modulos:
 - gui:        implementacoes das operacoes graficas
 """
 
-from . import closest
 from . import lineintersections
 from . import triangulation
 from .common.guicontrol import init_display
@@ -21,7 +20,6 @@ from .common.prim import reset_count
 
 children = (('lineintersections',  None, 'Detecção de interseção de segmentos - Ygor Tavela'),
             ('triangulation', None, 'Triangulação de Polígonos - Ygor Tavela'),
-            ('closest',  None, 'Par Mais Prox -  Gabriel & Luis'),
             )
 
 __all__ = [p[0] for p in children]

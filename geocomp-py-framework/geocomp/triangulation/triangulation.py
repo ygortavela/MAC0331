@@ -20,7 +20,6 @@ class PolyPartitioning():
         BST = bst.SplayTree()
 
         for eventVertex in sorted(self.dcel.vertex):
-            print(eventVertex)
             vertexNumber = eventVertex.vertexNumber()
             previousVertexNumber = self.dcel.iterateVertex(vertexNumber - 1)
             nextVertexNumber = self.dcel.iterateVertex(vertexNumber + 1)
@@ -40,14 +39,11 @@ class PolyPartitioning():
 
     def caseOne(self, BST, u, v, w):
         control.sleep()
-        print('Caso 1')
         if (u.y < w.y):
             u, w = w, u
 
         trap = BST.getTrapAndRemove(v)
         x = trap.topSuppVertex
-        print('x')
-        print(trap)
         suppPointId = v.coordinates.hilight(color="white")
         control.sleep()
 
@@ -73,7 +69,6 @@ class PolyPartitioning():
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
             self.buildSegmentFromEdge([x, v]).plot(cor="yellow")
-            print('Adicionei diagonal ' + str(diagonal))
 
         control.sleep()
         control.plot_delete(suppPointId)
@@ -82,13 +77,10 @@ class PolyPartitioning():
 
     def caseTwo(self, BST, u, v, w):
         control.sleep()
-        print('Caso 2')
         if (left(u.coordinates, v.coordinates, w.coordinates)):
             u, w = w, u
 
         trap = BST.getTrapAndRemove(v)
-        print('x')
-        print(trap)
         suppPointId = v.coordinates.hilight(color="white")
         control.sleep()
 
@@ -117,7 +109,6 @@ class PolyPartitioning():
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
             self.buildSegmentFromEdge([x, v]).plot(cor="yellow")
-            print('Adicionei diagonal ' + str(diagonal))
 
         leftId = self.buildSegmentFromEdge(leftEdge).hilight(
             color_line="blue", color_point="red")
@@ -134,11 +125,8 @@ class PolyPartitioning():
 
     def caseThree(self, BST, v):
         control.sleep()
-        print('Caso 3')
-        firstTrap = BST.getTrapAndRemove(v, True)
+        firstTrap = BST.getTrapAndRemove(v)
         x = firstTrap.topSuppVertex
-        print('x')
-        print(firstTrap)
         suppPointId = v.coordinates.hilight(color="white")
         control.sleep()
 
@@ -148,13 +136,10 @@ class PolyPartitioning():
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
             self.buildSegmentFromEdge([x, v]).plot(cor="yellow")
-            print('Adicionei diagonal ' + str(diagonal))
 
         if (firstTrap.leftEdge[1] != v) or (firstTrap.rightEdge[1] != v):
             secondTrap = BST.getTrapAndRemove(v)
             y = secondTrap.topSuppVertex
-            print('y')
-            print(secondTrap)
 
             if self.interiorDownCusp(y):
                 yNumber = y.vertexNumber()
@@ -162,7 +147,6 @@ class PolyPartitioning():
                 diagonal = (yNumber, vNumber)
                 self.dcel.addHalfEdge(diagonal)
                 self.buildSegmentFromEdge([y, v]).plot(cor="yellow")
-                print('Adicionei diagonal ' + str(diagonal))
 
             if firstTrap.rightEdge[1] == v:
                 newTrap = bst.Trap(firstTrap.leftEdge, v, secondTrap.rightEdge)
