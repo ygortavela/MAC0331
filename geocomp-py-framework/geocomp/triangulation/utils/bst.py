@@ -5,6 +5,7 @@
 # Adapted by Ygor Tavela for polygon y-monotone partitioning algorithm
 
 from geocomp.common import segment
+from geocomp.common.prim import left, left_on
 
 
 class Trap():
@@ -14,32 +15,49 @@ class Trap():
         self.rightEdge = rightEdge
 
     def __eq__(self, other):
-        if (self.leftEdge == other.leftEdge) and (self.topSuppVertex == other.topSuppVertex) and (self.rightEdge == other.rightEdge):
+        if self is other:
             return True
 
-        return False
+        if type(self) != type(other):
+            return False
+
+        return (self.leftEdge == other.leftEdge) and (self.topSuppVertex == other.topSuppVertex) and (self.rightEdge == other.rightEdge)
 
     def __lt__(self, other):
+        # if left(other.leftEdge[0].coordinates, other.leftEdge[1].coordinates, self.topSuppVertex.coordinates):
         if self.topSuppVertex.x < other.topSuppVertex.x:
             return True
 
         return False
 
+    def __le__(self, other):
+        return self < other and self == other
+
     def __gt__(self, other):
-        if self.topSuppVertex.x > other.topSuppVertex.x:
+        # if not left(other.rightEdge[0].coordinates, other.rightEdge[1].coordinates, self.topSuppVertex.coordinates):
+        if self.topSuppVertex.x >= other.topSuppVertex.x:
             return True
 
         return False
 
-    def trapContainsVertex(self, vertexPoint):
+    def __repr__(self):
+        return '\nTrapezoid: [ leftEdgeInit: ' + repr(self.leftEdge[0]) +\
+            '\n leftEdgeTo: ' + repr(self.leftEdge[1]) +\
+            '\n rightEdgeInit : ' + repr(self.rightEdge[0]) +\
+            '\n rightEdgeTo: ' + repr(self.rightEdge[1]) +\
+            '\n topSuppVertex: ' + repr(self.topSuppVertex) + ' ]'
+
+    def trapContainsVertex(self, vertexPoint, testOnlyEdgesAndSupp=False):
         if (self.topSuppVertex == vertexPoint):
             return True
-        elif (vertexPoint == self.leftEdge.init) or (vertexPoint == self.leftEdge.to) or \
-                (vertexPoint == self.rightEdge.init) or (vertexPoint == self.rightEdge.to):
+        elif (vertexPoint == self.leftEdge[0]) or (vertexPoint == self.leftEdge[1]) or \
+             (vertexPoint == self.rightEdge[0]) or (vertexPoint == self.rightEdge[1]):
             return True
-        elif (vertexPoint.x >= self.leftEdge.to.x) and (vertexPoint.x <= self.rightEdge.to.x) and \
-                (vertexPoint.y >= self.leftEdge.to.y) and (vertexPoint.y >= self.rightEdge.to.y) and \
-                (vertexPoint.y <= self.leftEdge.init.y) and (vertexPoint.y <= self.rightEdge.init.y):
+
+        if not testOnlyEdgesAndSupp and\
+            (vertexPoint.x >= self.leftEdge[1].x) and (vertexPoint.x <= self.rightEdge[1].x) and \
+            (vertexPoint.y >= self.leftEdge[1].y) and (vertexPoint.y >= self.rightEdge[1].y) and \
+                (vertexPoint.y <= self.leftEdge[0].y) and (vertexPoint.y <= self.rightEdge[0].y):
             return True
 
         return False
@@ -82,6 +100,19 @@ class SplayTree:
         self.__splay(node)
     # delete the node from the tree
 
+    def getTrapAndRemove(self, vertexPoint, isCaseThree=False):
+        if isCaseThree:
+            trap = self.get(vertexPoint, True)
+            if trap is None:
+                trap = self.get(vertexPoint)
+        else:
+            trap = self.get(vertexPoint)
+
+        if (trap != None):
+            self.delete_node(trap)
+
+        return trap
+
     def delete_node(self, data):
         self.__delete_node_helper(self.root, data)
 
@@ -92,8 +123,9 @@ class SplayTree:
         while node != None:
             if node.data == key:
                 x = node
+                break
 
-            if node.data <= key:
+            if node.data < key:
                 node = node.right
             else:
                 node = node.left
@@ -120,21 +152,23 @@ class SplayTree:
         self.root = self.__join(s.left, t)
         s = None
 
-    def get(self, vertexPoint):
-        self.__get_helper(self.root, vertexPoint)
+    def get(self, vertexPoint, testOnlyEdgesAndSupp=False):
+        return self.__get_helper(self.root, vertexPoint, testOnlyEdgesAndSupp)
 
-    def __get_helper(self, node, vertexPoint):
+    def __get_helper(self, node, vertexPoint, testOnlyEdgesAndSupp):
         if node is None:
-            return None
+            return
 
-        if node.data.trapContainsVertex(vertexPoint):
+        if (not testOnlyEdgesAndSupp and node.data.trapContainsVertex(vertexPoint)) or\
+                (testOnlyEdgesAndSupp and node.data.trapContainsVertex(vertexPoint, True)):
             return node.data
         elif vertexPoint.x < node.data.topSuppVertex.x:
-            return self.__get_helper(node.left, vertexPoint)
+            return self.__get_helper(node.left, vertexPoint, testOnlyEdgesAndSupp)
         elif vertexPoint.x > node.data.topSuppVertex.x:
-            return self.__get_helper(node.right, vertexPoint)
+            return self.__get_helper(node.right, vertexPoint, testOnlyEdgesAndSupp)
 
     # rotate left at node x
+
     def __left_rotate(self, x):
         y = x.right
         x.right = y.left
@@ -252,3 +286,11 @@ class SplayTree:
             x = y
             y = y.parent
         return y
+
+    def inorder(self, node):
+        if node is None:
+            return
+
+        self.inorder(node.left)
+        print(node.data)
+        self.inorder(node.right)

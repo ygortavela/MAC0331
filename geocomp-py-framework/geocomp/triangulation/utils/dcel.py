@@ -12,6 +12,39 @@ class Vertex():
         return '[ coordinates: ' + repr(self.coordinates) +\
             '; incidentEdge: ' + repr(self.incidentEdge) + ' ]'
 
+    def __eq__(self, other):
+        if self is other:
+            return True
+
+        if type(self) != type(other):
+            return False
+
+        return self.incidentEdge[0] == other.incidentEdge[0]
+
+    def __lt__(self, other):
+        if self.coordinates.y < other.coordinates.y:
+            return False
+        elif self.coordinates.y > other.coordinates.y:
+            return True
+        else:
+            if self.coordinates.x > other.coordinates.x:
+                return False
+            elif self.coordinates.x < other.coordinates.x:
+                return True
+
+        return False
+
+    def vertexNumber(self):
+        return self.incidentEdge[0]
+
+    @property
+    def x(self):
+        return self.coordinates.x
+
+    @property
+    def y(self):
+        return self.coordinates.y
+
 
 class HalfEdge():
     def __init__(self, originVertex, twinEdge, nextEdge, previousEdge):
@@ -49,7 +82,6 @@ class DCEL():
             edge = (i, nextVertex)
             twinEdge = (nextVertex, i)
 
-            self.vertex.append(Vertex(points[i], edge))
             self.halfEdge[edge] = HalfEdge(self.vertex[i], twinEdge, (
                 nextVertex, afterNextVertex), (previousVertex, i))
             self.halfEdge[twinEdge] = HalfEdge(self.vertex[nextVertex], edge, (
@@ -57,6 +89,27 @@ class DCEL():
 
     def iterateVertex(self, i):
         return (i + self.size) % self.size
+
+    def monotonePolygonsList(self):
+        visitedVertex = [False for vertex in self.vertex]
+        polygons = []
+
+        for i in range(self.size):
+            if not visitedVertex[i]:
+                faceVertex = []
+                startEdge = self.twinEdge(self.vertex[i].incidentEdge)
+                edge = startEdge
+                faceVertex.append(self.vertex[edge[0]].coordinates)
+                visitedVertex[edge[0]] = True
+
+                while self.nextEdge(edge) != startEdge:
+                    edge = self.nextEdge(edge)
+                    visitedVertex[edge[0]] = True
+                    faceVertex.append(self.vertex[edge[0]].coordinates)
+
+                polygons.append(faceVertex)
+
+        return polygons
 
     def addHalfEdge(self, diagonalEdge):
         revertedDiagonalEdge = self.revertEdgeVertex(diagonalEdge)
@@ -125,6 +178,9 @@ class DCEL():
 
     def vertexCoordinates(self, vertexNumber):
         return self.vertex[vertexNumber].coordinates
+
+    def getVertex(self, vertexNumber):
+        return self.vertex[vertexNumber]
 
     def twinEdge(self, edge):
         return self.halfEdge[edge].twinEdge
