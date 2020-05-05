@@ -1,18 +1,18 @@
-from geocomp.common import point
-from geocomp.common import segment
-from geocomp.common import polygon
 from geocomp.common import control
-from geocomp import config
 from geocomp.common.prim import left, left_on
 from .utils import dcel
 from .utils import bst
 
 
 class PolyPartitioning():
-    def __init__(self, vertexesList):
+    def __init__(self, vertexesList, diagonalList):
+        self.partitionDiagonalList = []
         self.dcel = dcel.DCEL(vertexesList)
         self.__partitionatePolygon()
         self.partitions = self.dcel.monotonePolygonsList()
+
+        for diagonal in self.partitionDiagonalList:
+            diagonalList.append(diagonal)
 
     def __partitionatePolygon(self):
         BST = bst.SplayTree()
@@ -66,6 +66,8 @@ class PolyPartitioning():
             vNumber = v.vertexNumber()
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
+            self.partitionDiagonalList.append(
+                [x.coordinates, v.coordinates])
             self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
 
         control.sleep()
@@ -106,6 +108,8 @@ class PolyPartitioning():
             vNumber = v.vertexNumber()
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
+            self.partitionDiagonalList.append(
+                [x.coordinates, v.coordinates])
             self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
 
         leftId = self.dcel.buildSegmentFromEdge(leftEdge).hilight(
@@ -133,6 +137,8 @@ class PolyPartitioning():
             vNumber = v.vertexNumber()
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
+            self.partitionDiagonalList.append(
+                [x.coordinates, v.coordinates])
             self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
 
         if (firstTrap.leftEdge[1] != v) or (firstTrap.rightEdge[1] != v):
@@ -144,6 +150,8 @@ class PolyPartitioning():
                 vNumber = v.vertexNumber()
                 diagonal = (yNumber, vNumber)
                 self.dcel.addHalfEdge(diagonal)
+                self.partitionDiagonalList.append(
+                    [y.coordinates, v.coordinates])
                 self.dcel.buildSegmentFromEdge([y, v]).plot(cor="yellow")
 
             if firstTrap.rightEdge[1] == v:
@@ -183,12 +191,16 @@ class PolyPartitioning():
 
 
 class PolyTriangulate():
-    def __init__(self, monotonePolyList):
+    def __init__(self, monotonePolyList, diagonalList):
         if len(monotonePolyList) > 3:
+            self.monotoneDiagonalList = []
             self.__dcel = dcel.DCEL(monotonePolyList)
             self.__sortedVertexes = sorted(self.__dcel.vertex)
             self.__stack = []
             self.__triangulate()
+
+            for diagonal in self.monotoneDiagonalList:
+                diagonalList.append(diagonal)
 
     def __triangulate(self):
         self.__stack.append(self.__sortedVertexes[0])
@@ -231,6 +243,8 @@ class PolyTriangulate():
             self.__stack.pop()
             self.__dcel.buildSegmentFromEdge(
                 [currentVertex, self.__stackTop()]).plot(cor="white")
+            self.monotoneDiagonalList.append(
+                [currentVertex.coordinates, self.__stackTop().coordinates])
 
         self.__stack.append(currentVertex)
 
@@ -241,6 +255,8 @@ class PolyTriangulate():
             control.sleep()
             self.__dcel.buildSegmentFromEdge(
                 [currentVertex, self.__stackTop()]).plot(cor="white")
+            self.monotoneDiagonalList.append(
+                [currentVertex.coordinates, self.__stackTop().coordinates])
             self.__stack.pop()
 
         self.__stack.pop()
@@ -254,6 +270,8 @@ class PolyTriangulate():
             control.sleep()
             self.__dcel.buildSegmentFromEdge(
                 [currentVertex, self.__stackBeforeTop()]).plot(cor="white")
+            self.monotoneDiagonalList.append(
+                [currentVertex.coordinates, self.__stackBeforeTop().coordinates])
             self.__stack.pop()
 
     def __angle(self, currentVertex, isTopNextOrder):
@@ -289,7 +307,11 @@ class PolyTriangulate():
 
 
 def triangulation(p):
-    polyPartitioning = PolyPartitioning(p[0].vertices())
+    diagonalList = []
+    polyPartitioning = PolyPartitioning(p[0].vertices(), diagonalList)
 
     for monotonePolygon in polyPartitioning.partitions:
-        PolyTriangulate(monotonePolygon)
+        PolyTriangulate(monotonePolygon, diagonalList)
+
+    print('Diagonal List:')
+    print(diagonalList)
