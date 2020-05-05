@@ -5,14 +5,11 @@ from .utils import bst
 
 
 class PolyPartitioning():
-    def __init__(self, vertexesList, diagonalList):
+    def __init__(self, vertexesList):
         self.partitionDiagonalList = []
         self.dcel = dcel.DCEL(vertexesList)
         self.__partitionatePolygon()
         self.partitions = self.dcel.monotonePolygonsList()
-
-        for diagonal in self.partitionDiagonalList:
-            diagonalList.append(diagonal)
 
     def __partitionatePolygon(self):
         BST = bst.SplayTree()
@@ -191,16 +188,14 @@ class PolyPartitioning():
 
 
 class PolyTriangulate():
-    def __init__(self, monotonePolyList, diagonalList):
+    def __init__(self, monotonePolyList):
+        self.monotoneDiagonalList = []
+
         if len(monotonePolyList) > 3:
-            self.monotoneDiagonalList = []
             self.__dcel = dcel.DCEL(monotonePolyList)
             self.__sortedVertexes = sorted(self.__dcel.vertex)
             self.__stack = []
             self.__triangulate()
-
-            for diagonal in self.monotoneDiagonalList:
-                diagonalList.append(diagonal)
 
     def __triangulate(self):
         self.__stack.append(self.__sortedVertexes[0])
@@ -308,10 +303,12 @@ class PolyTriangulate():
 
 def triangulation(p):
     diagonalList = []
-    polyPartitioning = PolyPartitioning(p[0].vertices(), diagonalList)
+    polyPartitioning = PolyPartitioning(p[0].vertices())
+    diagonalList.extend(polyPartitioning.partitionDiagonalList)
 
     for monotonePolygon in polyPartitioning.partitions:
-        PolyTriangulate(monotonePolygon, diagonalList)
+        polyTriangulate = PolyTriangulate(monotonePolygon)
+        diagonalList.extend(polyTriangulate.monotoneDiagonalList)
 
     print('Diagonal List:')
     print(diagonalList)
