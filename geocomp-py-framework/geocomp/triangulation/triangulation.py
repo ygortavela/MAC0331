@@ -22,6 +22,10 @@ class PolyPartitioning():
             previousVertex = self.dcel.getVertex(previousVertexNumber)
             nextVertex = self.dcel.getVertex(nextVertexNumber)
 
+            sweepLineId = control.plot_horiz_line(eventVertex.y, color="cyan")
+            suppPointId = eventVertex.coordinates.hilight(color="white")
+            control.sleep()
+
             if ((previousVertex.y < eventVertex.y) and (eventVertex.y < nextVertex.y)) or\
                     ((nextVertex.y < eventVertex.y) and (eventVertex.y < previousVertex.y)) or\
                     ((eventVertex.y < previousVertex.y) and (eventVertex.y == nextVertex.y) and (eventVertex.x < nextVertex.x)) or\
@@ -32,6 +36,9 @@ class PolyPartitioning():
             else:
                 self.__caseThree(BST, eventVertex)
 
+            control.plot_delete(sweepLineId)
+            control.plot_delete(suppPointId)
+
     def __caseOne(self, BST, u, v, w):
         control.sleep()
         if (u.y < w.y):
@@ -39,8 +46,6 @@ class PolyPartitioning():
 
         trap = BST.getTrapAndRemove(v)
         x = trap.topSuppVertex
-        suppPointId = v.coordinates.hilight(color="white")
-        control.sleep()
 
         if v == trap.leftEdge[1]:
             leftEdge = [v, w]
@@ -68,7 +73,6 @@ class PolyPartitioning():
             self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
 
         control.sleep()
-        control.plot_delete(suppPointId)
         control.plot_delete(leftId)
         control.plot_delete(rightId)
 
@@ -78,8 +82,6 @@ class PolyPartitioning():
             u, w = w, u
 
         trap = BST.getTrapAndRemove(v)
-        suppPointId = v.coordinates.hilight(color="white")
-        control.sleep()
 
         if trap is None:
             leftEdge = [v, u]
@@ -115,7 +117,6 @@ class PolyPartitioning():
             color_line="blue", color_point="red")
 
         control.sleep()
-        control.plot_delete(suppPointId)
         control.plot_delete(leftId)
         control.plot_delete(rightId)
         if (trap is not None):
@@ -126,8 +127,6 @@ class PolyPartitioning():
         control.sleep()
         firstTrap = BST.getTrapAndRemove(v)
         x = firstTrap.topSuppVertex
-        suppPointId = v.coordinates.hilight(color="white")
-        control.sleep()
 
         if self.__interiorDownCusp(x):
             xNumber = x.vertexNumber()
@@ -169,8 +168,6 @@ class PolyPartitioning():
             control.sleep()
             control.plot_delete(leftId)
             control.plot_delete(rightId)
-
-        control.plot_delete(suppPointId)
 
     def __interiorDownCusp(self, vertex):
         vertexNumber = vertex.vertexNumber()
