@@ -113,8 +113,12 @@ class DCEL():
 
     def addHalfEdge(self, diagonalEdge):
         revertedDiagonalEdge = self.revertEdgeVertex(diagonalEdge)
+        print('diagonal' + str(diagonalEdge))
+        print('travei no 1')
         initIncidentEdges = self.incidentEdgesInCone(diagonalEdge)
+        print('travei no 2')
         endIncidentEdges = self.incidentEdgesInCone(revertedDiagonalEdge)
+        print('passei carai')
 
         self.halfEdge[diagonalEdge] = HalfEdge(self.vertex[diagonalEdge[0]],
                                                revertedDiagonalEdge,
@@ -171,6 +175,8 @@ class DCEL():
 
         while (self.nextEdge(self.twinEdge(halfEdge)) != startEdge):
             halfEdge = self.nextEdge(self.twinEdge(halfEdge))
+            print(startEdge)
+            print(halfEdge)
             incidentEdgesList.append(halfEdge)
 
         return incidentEdgesList

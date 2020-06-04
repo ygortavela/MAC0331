@@ -7,6 +7,7 @@ from .utils import bst
 class PolyPartitioning():
     def __init__(self, vertexesList):
         self.partitionDiagonalList = []
+        self.plotIDs = []
         self.dcel = dcel.DCEL(vertexesList)
         self.__partitionatePolygon()
         self.partitions = self.dcel.monotonePolygonsList()
@@ -70,7 +71,9 @@ class PolyPartitioning():
             self.dcel.addHalfEdge(diagonal)
             self.partitionDiagonalList.append(
                 [x, v])
-            self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
+            diagonalPlotID = self.dcel.buildSegmentFromEdge(
+                [x, v]).plot(cor="yellow")
+            self.plotIDs.append(diagonalPlotID)
 
         control.sleep()
         control.plot_delete(leftId)
@@ -109,7 +112,9 @@ class PolyPartitioning():
             self.dcel.addHalfEdge(diagonal)
             self.partitionDiagonalList.append(
                 [x, v])
-            self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
+            diagonalPlotID = self.dcel.buildSegmentFromEdge(
+                [x, v]).plot(cor="yellow")
+            self.plotIDs.append(diagonalPlotID)
 
         leftId = self.dcel.buildSegmentFromEdge(leftEdge).hilight(
             color_line="blue", color_point="red")
@@ -135,7 +140,9 @@ class PolyPartitioning():
             self.dcel.addHalfEdge(diagonal)
             self.partitionDiagonalList.append(
                 [x, v])
-            self.dcel.buildSegmentFromEdge([x, v]).plot(cor="yellow")
+            diagonalPlotID = self.dcel.buildSegmentFromEdge(
+                [x, v]).plot(cor="yellow")
+            self.plotIDs.append(diagonalPlotID)
 
         if (firstTrap.leftEdge[1] != v) or (firstTrap.rightEdge[1] != v):
             secondTrap = BST.getTrapAndRemove(v)
@@ -148,7 +155,9 @@ class PolyPartitioning():
                 self.dcel.addHalfEdge(diagonal)
                 self.partitionDiagonalList.append(
                     [y, v])
-                self.dcel.buildSegmentFromEdge([y, v]).plot(cor="yellow")
+                diagonalPlotID = self.dcel.buildSegmentFromEdge(
+                    [y, v]).plot(cor="yellow")
+                self.plotIDs.append(diagonalPlotID)
 
             if firstTrap.rightEdge[1] == v:
                 newTrap = bst.Trap(firstTrap.leftEdge, v, secondTrap.rightEdge)
@@ -187,6 +196,7 @@ class PolyPartitioning():
 class PolyTriangulate():
     def __init__(self, monotonePolyList):
         self.monotoneDiagonalList = []
+        self.plotIDs = []
 
         if len(monotonePolyList) > 3:
             self.__dcel = dcel.DCEL(monotonePolyList)
@@ -233,8 +243,9 @@ class PolyTriangulate():
         while (self.__stackSize() > 1 and self.__angle(currentVertex, isTopNextOrder)):
             control.sleep()
             self.__stack.pop()
-            self.__dcel.buildSegmentFromEdge(
+            diagonalPlotID = self.__dcel.buildSegmentFromEdge(
                 [currentVertex, self.__stackTop()]).plot(cor="white")
+            self.plotIDs.append(diagonalPlotID)
             self.monotoneDiagonalList.append(
                 [currentVertex, self.__stackTop()])
 
@@ -245,8 +256,9 @@ class PolyTriangulate():
 
         while (self.__stackSize() > 1):
             control.sleep()
-            self.__dcel.buildSegmentFromEdge(
+            diagonalPlotID = self.__dcel.buildSegmentFromEdge(
                 [currentVertex, self.__stackTop()]).plot(cor="white")
+            self.plotIDs.append(diagonalPlotID)
             self.monotoneDiagonalList.append(
                 [currentVertex, self.__stackTop()])
             self.__stack.pop()
@@ -260,8 +272,9 @@ class PolyTriangulate():
 
         while (self.__stackSize() > 1):
             control.sleep()
-            self.__dcel.buildSegmentFromEdge(
+            diagonalPlotID = self.__dcel.buildSegmentFromEdge(
                 [currentVertex, self.__stackTop()]).plot(cor="white")
+            self.plotIDs.append(diagonalPlotID)
             self.monotoneDiagonalList.append(
                 [currentVertex, self.__stackTop()])
             self.__stack.pop()
@@ -301,12 +314,19 @@ class PolyTriangulate():
 class Triangulation():
     def __init__(self, p):
         self.diagonalList = []
+        self.plotIDs = []
         polyPartitioning = PolyPartitioning(p[0].vertices())
         self.diagonalList.extend(polyPartitioning.partitionDiagonalList)
+        self.plotIDs.extend(polyPartitioning.plotIDs)
 
         for monotonePolygon in polyPartitioning.partitions:
             polyTriangulate = PolyTriangulate(monotonePolygon)
             self.diagonalList.extend(polyTriangulate.monotoneDiagonalList)
+            self.plotIDs.extend(polyTriangulate.plotIDs)
+
+    def clearDiagonalPlots(self):
+        for diagonalPlotID in self.plotIDs:
+            control.plot_delete(diagonalPlotID)
 
 
 def triangulation(p):
