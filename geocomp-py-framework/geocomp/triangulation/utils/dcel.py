@@ -131,6 +131,22 @@ class DCEL():
             endIncidentEdges[0])].nextEdge = revertedDiagonalEdge
         self.halfEdge[initIncidentEdges[1]].previousEdge = revertedDiagonalEdge
 
+    def removeHalfEdge(self, diagonalEdge):
+        twinEdge = self.twinEdge(diagonalEdge)
+
+        self.halfEdge[self.previousEdge(
+            diagonalEdge)].nextEdge = self.nextEdge(twinEdge)
+        self.halfEdge[self.nextEdge(
+            twinEdge)].previousEdge = self.previousEdge(diagonalEdge)
+
+        self.halfEdge[self.previousEdge(
+            twinEdge)].nextEdge = self.nextEdge(diagonalEdge)
+        self.halfEdge[self.nextEdge(
+            diagonalEdge)].previousEdge = self.previousEdge(twinEdge)
+
+        del self.halfEdge[diagonalEdge]
+        del self.halfEdge[twinEdge]
+
     def incidentEdgesInCone(self, diagonalEdge):
         incidentEdgesList = self.incidentEdges(diagonalEdge[0])
         edgesInConeList = [incidentEdgesList[0], incidentEdgesList[1]]
@@ -183,6 +199,12 @@ class DCEL():
             adjacentVertexesList.append(adjacentVertex)
 
         return adjacentVertexesList
+
+    def adjacentEdges(self, edge):
+        previousEdge = self.twinEdge(self.previousEdge(edge))
+        nextEdge = self.nextEdge(self.twinEdge(edge))
+
+        return [previousEdge, nextEdge]
 
     def originVertex(self, edge):
         return self.halfEdge[edge].originVertex
