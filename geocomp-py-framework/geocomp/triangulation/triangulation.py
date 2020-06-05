@@ -41,8 +41,8 @@ class PolyPartitioning():
                     (eventVertex.y == previousVertex.y and previousVertex.x < eventVertex.x and nextVertex.y > eventVertex.y):
                 self.__caseThree(BST, eventVertex)
             elif (previousVertex.y < eventVertex.y and nextVertex.y < eventVertex.y) or\
-                    ((eventVertex.y == nextVertex.y) and (eventVertex.y > previousVertex.y) and (eventVertex.x < nextVertex.x)) or\
-                    ((eventVertex.y == previousVertex.y) and (eventVertex.y > nextVertex.y) and (eventVertex.x < previousVertex.x)):
+                    (eventVertex.y == nextVertex.y and eventVertex.y > previousVertex.y and eventVertex.x < nextVertex.x) or\
+                    (eventVertex.y == previousVertex.y and eventVertex.y > nextVertex.y and eventVertex.x < previousVertex.x):
                 self.__caseTwo(BST, previousVertex, eventVertex, nextVertex)
             else:
                 self.__caseOne(BST, previousVertex, eventVertex, nextVertex)
@@ -196,7 +196,9 @@ class PolyPartitioning():
         previousPoint = self.dcel.vertexCoordinates(previousVertexNumber)
         nextPoint = self.dcel.vertexCoordinates(nextVertexNumber)
 
-        if (previousPoint.y > point.y) and (nextPoint.y > point.y):
+        if (previousPoint.y > point.y and nextPoint.y > point.y) or\
+                (point.y == nextPoint.y and nextPoint.x < point.x and previousPoint.y > point.y) or\
+                (point.y == previousPoint.y and previousPoint.x < point.x and nextPoint.y > point.y):
             return True
 
         return False
