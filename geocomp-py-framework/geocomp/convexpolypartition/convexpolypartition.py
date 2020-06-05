@@ -1,22 +1,58 @@
 from geocomp.common import control
+from geocomp.common import segment
 from geocomp.triangulation import triangulation
 from geocomp.triangulation.utils import dcel
+from geocomp.common.prim import left, left_on
 
 
 class ConvexPolyPartition():
     def __init__(self, p):
         triang = triangulation.Triangulation(p)
-        triang.clearDiagonalPlots()
         self.dcel = triang.polyDCEL
-        self.diagonalQueue = []
+        self.diagonalQueue = triang.diagonalList
 
-        for diagonal in triang.diagonalList:
-            diagonalInit = diagonal[0][0]
-            diagonalEnd = diagonal[0][1]
-            self.diagonalQueue.append([diagonal[0], control.plot_segment(
-                diagonalInit.x, diagonalInit.y, diagonalEnd.x, diagonalEnd.y, "white")])
+        self.partitionatePoly()
+
+    def partitionatePoly(self):
+        for diagonal in self.diagonalQueue:
+            u = self.dcel.originVertex(diagonal[0]).coordinates
+            v = self.dcel.endVertex(diagonal[0]).coordinates
+            seg = segment.Segment(u, v)
+            seg.hilight(color_line="cyan", color_point="cyan")
+
+            if not self.essentialEdge(diagonal[0]):
+                self.dcel.removeHalfEdge(diagonal[0])
+                control.plot_delete(diagonal[1])
+
+            control.sleep()
+            seg.unhilight()
+
+    def essentialEdge(self, diagonal):
+        diagonalAdjacentEdges = self.dcel.adjacentEdges(diagonal)
+        diagonalTwinAdjacentEdges = self.dcel.adjacentEdges(
+            self.dcel.twinEdge(diagonal))
+
+        return self.__testReflexVertex(diagonalAdjacentEdges) or self.__testReflexVertex(diagonalTwinAdjacentEdges)
+
+    def __testReflexVertex(self, adjacentEdges):
+        u = self.dcel.originVertex(adjacentEdges[1])
+        v = self.dcel.endVertex(adjacentEdges[1])
+        w = self.dcel.endVertex(adjacentEdges[0])
+
+        control.sleep()
+        segOne = segment.Segment(u.coordinates, v.coordinates)
+        segTwo = segment.Segment(u.coordinates, w.coordinates)
+        segOne.hilight(color_line="green", color_point="green")
+        segTwo.hilight(color_line="green", color_point="green")
+        control.sleep()
+        segOne.unhilight()
+        segTwo.unhilight()
+
+        return self.__angle(u, v, w)
+
+    def __angle(self, u, v, w):
+        return not left_on(u.coordinates, v.coordinates, w.coordinates)
 
 
 def convexpolypartition(p):
     polyPart = ConvexPolyPartition(p)
-    print(polyPart.diagonalQueue)

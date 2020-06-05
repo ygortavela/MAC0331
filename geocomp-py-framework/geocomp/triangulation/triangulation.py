@@ -80,7 +80,7 @@ class PolyPartitioning():
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
             self.partitionDiagonalList.append([
-                [x.coordinates, v.coordinates],
+                (xNumber, vNumber),
                 control.plot_segment(x.x, x.y, v.x, v.y, "yellow")
             ])
 
@@ -121,7 +121,7 @@ class PolyPartitioning():
             self.dcel.addHalfEdge(diagonal)
 
             self.partitionDiagonalList.append([
-                [x.coordinates, v.coordinates],
+                (xNumber, vNumber),
                 control.plot_segment(x.x, x.y, v.x, v.y, "yellow")
             ])
 
@@ -149,7 +149,7 @@ class PolyPartitioning():
             self.dcel.addHalfEdge(diagonal)
 
             self.partitionDiagonalList.append([
-                [x.coordinates, v.coordinates],
+                (xNumber, vNumber),
                 control.plot_segment(x.x, x.y, v.x, v.y, "yellow")
             ])
 
@@ -164,7 +164,7 @@ class PolyPartitioning():
                 self.dcel.addHalfEdge(diagonal)
 
                 self.partitionDiagonalList.append([
-                    [x.coordinates, v.coordinates],
+                    (yNumber, vNumber),
                     control.plot_segment(y.x, y.y, v.x, v.y, "yellow")
                 ])
 
@@ -279,17 +279,17 @@ class PolyTriangulate():
             self.__stack.pop()
 
     def __addDiagonal(self, currentVertex):
-        self.monotoneDiagonalList.append([
-            [currentVertex.coordinates, self.__stackTop().coordinates],
-            control.plot_segment(currentVertex.x, currentVertex.y, self.__stackTop(
-            ).x, self.__stackTop().y, "white")
-        ])
         currentVertexNumberPolyDCEL = self.polyDCEL.mapCoordinateToNumber[(
             currentVertex.x, currentVertex.y)]
         stackTopVertexNumberPolyDCEL = self.polyDCEL.mapCoordinateToNumber[(
             self.__stackTop().x, self.__stackTop().y)]
         self.polyDCEL.addHalfEdge(
             (currentVertexNumberPolyDCEL, stackTopVertexNumberPolyDCEL))
+        self.monotoneDiagonalList.append([
+            (currentVertexNumberPolyDCEL, stackTopVertexNumberPolyDCEL),
+            control.plot_segment(currentVertex.x, currentVertex.y, self.__stackTop(
+            ).x, self.__stackTop().y, "white")
+        ])
 
     def __angle(self, currentVertex, isTopNextOrder):
         stackBeforeTop = self.__stackBeforeTop()
