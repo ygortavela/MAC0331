@@ -5,10 +5,9 @@ from .utils import bst
 
 
 class PolyPartitioning():
-    def __init__(self, vertexesList):
+    def __init__(self, polyDCEL):
         self.partitionDiagonalList = []
-        self.plotIDs = []
-        self.dcel = dcel.DCEL(vertexesList)
+        self.dcel = polyDCEL
         self.__partitionatePolygon()
         self.partitions = self.dcel.monotonePolygonsList()
 
@@ -27,15 +26,26 @@ class PolyPartitioning():
             suppPointId = eventVertex.coordinates.hilight(color="white")
             control.sleep()
 
-            if ((previousVertex.y < eventVertex.y) and (eventVertex.y < nextVertex.y)) or\
-                    ((nextVertex.y < eventVertex.y) and (eventVertex.y < previousVertex.y)) or\
-                    ((eventVertex.y < previousVertex.y) and (eventVertex.y == nextVertex.y) and (eventVertex.x < nextVertex.x)) or\
-                    ((eventVertex.y == previousVertex.y) and (eventVertex.y > nextVertex.y) and (eventVertex.x > previousVertex.x)):
-                self.__caseOne(BST, previousVertex, eventVertex, nextVertex)
-            elif (previousVertex.y < eventVertex.y):
+            # if ((previousVertex.y < eventVertex.y) and (eventVertex.y < nextVertex.y)) or\
+            #         ((nextVertex.y < eventVertex.y) and (eventVertex.y < previousVertex.y)) or\
+            #         ((eventVertex.y < previousVertex.y) and (eventVertex.y == nextVertex.y) and (eventVertex.x < nextVertex.x)) or\
+            #         ((eventVertex.y == previousVertex.y) and (eventVertex.y > nextVertex.y) and (eventVertex.x > previousVertex.x)):
+            #     self.__caseOne(BST, previousVertex, eventVertex, nextVertex)
+            # elif (previousVertex.y < eventVertex.y):
+            #     self.__caseTwo(BST, previousVertex, eventVertex, nextVertex)
+            # else:
+            #     self.__caseThree(BST, eventVertex)
+
+            if (previousVertex.y > eventVertex.y and nextVertex.y > eventVertex.y) or\
+                    (eventVertex.y == nextVertex.y and nextVertex.x < eventVertex.x and previousVertex.y > eventVertex.y) or\
+                    (eventVertex.y == previousVertex.y and previousVertex.x < eventVertex.x and nextVertex.y > eventVertex.y):
+                self.__caseThree(BST, eventVertex)
+            elif (previousVertex.y < eventVertex.y and nextVertex.y < eventVertex.y) or\
+                    ((eventVertex.y == nextVertex.y) and (eventVertex.y > previousVertex.y) and (eventVertex.x < nextVertex.x)) or\
+                    ((eventVertex.y == previousVertex.y) and (eventVertex.y > nextVertex.y) and (eventVertex.x < previousVertex.x)):
                 self.__caseTwo(BST, previousVertex, eventVertex, nextVertex)
             else:
-                self.__caseThree(BST, eventVertex)
+                self.__caseOne(BST, previousVertex, eventVertex, nextVertex)
 
             control.plot_delete(sweepLineId)
             control.plot_delete(suppPointId)
@@ -69,11 +79,10 @@ class PolyPartitioning():
             vNumber = v.vertexNumber()
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
-            self.partitionDiagonalList.append(
-                [x, v])
-            diagonalPlotID = self.dcel.buildSegmentFromEdge(
-                [x, v]).plot(cor="yellow")
-            self.plotIDs.append(diagonalPlotID)
+            self.partitionDiagonalList.append([
+                [x.coordinates, v.coordinates],
+                control.plot_segment(x.x, x.y, v.x, v.y, "yellow")
+            ])
 
         control.sleep()
         control.plot_delete(leftId)
@@ -110,11 +119,11 @@ class PolyPartitioning():
             vNumber = v.vertexNumber()
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
-            self.partitionDiagonalList.append(
-                [x, v])
-            diagonalPlotID = self.dcel.buildSegmentFromEdge(
-                [x, v]).plot(cor="yellow")
-            self.plotIDs.append(diagonalPlotID)
+
+            self.partitionDiagonalList.append([
+                [x.coordinates, v.coordinates],
+                control.plot_segment(x.x, x.y, v.x, v.y, "yellow")
+            ])
 
         leftId = self.dcel.buildSegmentFromEdge(leftEdge).hilight(
             color_line="blue", color_point="red")
@@ -138,11 +147,11 @@ class PolyPartitioning():
             vNumber = v.vertexNumber()
             diagonal = (xNumber, vNumber)
             self.dcel.addHalfEdge(diagonal)
-            self.partitionDiagonalList.append(
-                [x, v])
-            diagonalPlotID = self.dcel.buildSegmentFromEdge(
-                [x, v]).plot(cor="yellow")
-            self.plotIDs.append(diagonalPlotID)
+
+            self.partitionDiagonalList.append([
+                [x.coordinates, v.coordinates],
+                control.plot_segment(x.x, x.y, v.x, v.y, "yellow")
+            ])
 
         if (firstTrap.leftEdge[1] != v) or (firstTrap.rightEdge[1] != v):
             secondTrap = BST.getTrapAndRemove(v)
@@ -153,11 +162,11 @@ class PolyPartitioning():
                 vNumber = v.vertexNumber()
                 diagonal = (yNumber, vNumber)
                 self.dcel.addHalfEdge(diagonal)
-                self.partitionDiagonalList.append(
-                    [y, v])
-                diagonalPlotID = self.dcel.buildSegmentFromEdge(
-                    [y, v]).plot(cor="yellow")
-                self.plotIDs.append(diagonalPlotID)
+
+                self.partitionDiagonalList.append([
+                    [x.coordinates, v.coordinates],
+                    control.plot_segment(y.x, y.y, v.x, v.y, "yellow")
+                ])
 
             if firstTrap.rightEdge[1] == v:
                 newTrap = bst.Trap(firstTrap.leftEdge, v, secondTrap.rightEdge)
@@ -194,11 +203,11 @@ class PolyPartitioning():
 
 
 class PolyTriangulate():
-    def __init__(self, monotonePolyList):
+    def __init__(self, monotonePolyList, polyDCEL):
         self.monotoneDiagonalList = []
-        self.plotIDs = []
 
         if len(monotonePolyList) > 3:
+            self.polyDCEL = polyDCEL
             self.__dcel = dcel.DCEL(monotonePolyList)
             self.__sortedVertexes = sorted(self.__dcel.vertex)
             self.__stack = []
@@ -243,11 +252,7 @@ class PolyTriangulate():
         while (self.__stackSize() > 1 and self.__angle(currentVertex, isTopNextOrder)):
             control.sleep()
             self.__stack.pop()
-            diagonalPlotID = self.__dcel.buildSegmentFromEdge(
-                [currentVertex, self.__stackTop()]).plot(cor="white")
-            self.plotIDs.append(diagonalPlotID)
-            self.monotoneDiagonalList.append(
-                [currentVertex, self.__stackTop()])
+            self.__addDiagonal(currentVertex)
 
         self.__stack.append(currentVertex)
 
@@ -256,11 +261,7 @@ class PolyTriangulate():
 
         while (self.__stackSize() > 1):
             control.sleep()
-            diagonalPlotID = self.__dcel.buildSegmentFromEdge(
-                [currentVertex, self.__stackTop()]).plot(cor="white")
-            self.plotIDs.append(diagonalPlotID)
-            self.monotoneDiagonalList.append(
-                [currentVertex, self.__stackTop()])
+            self.__addDiagonal(currentVertex)
             self.__stack.pop()
 
         self.__stack.pop()
@@ -272,12 +273,21 @@ class PolyTriangulate():
 
         while (self.__stackSize() > 1):
             control.sleep()
-            diagonalPlotID = self.__dcel.buildSegmentFromEdge(
-                [currentVertex, self.__stackTop()]).plot(cor="white")
-            self.plotIDs.append(diagonalPlotID)
-            self.monotoneDiagonalList.append(
-                [currentVertex, self.__stackTop()])
+            self.__addDiagonal(currentVertex)
             self.__stack.pop()
+
+    def __addDiagonal(self, currentVertex):
+        self.monotoneDiagonalList.append([
+            [currentVertex.coordinates, self.__stackTop().coordinates],
+            control.plot_segment(currentVertex.x, currentVertex.y, self.__stackTop(
+            ).x, self.__stackTop().y, "white")
+        ])
+        currentVertexNumberPolyDCEL = self.polyDCEL.mapCoordinateToNumber[(
+            currentVertex.x, currentVertex.y)]
+        stackTopVertexNumberPolyDCEL = self.polyDCEL.mapCoordinateToNumber[(
+            self.__stackTop().x, self.__stackTop().y)]
+        self.polyDCEL.addHalfEdge(
+            (currentVertexNumberPolyDCEL, stackTopVertexNumberPolyDCEL))
 
     def __angle(self, currentVertex, isTopNextOrder):
         stackBeforeTop = self.__stackBeforeTop()
@@ -314,24 +324,21 @@ class PolyTriangulate():
 class Triangulation():
     def __init__(self, p):
         self.diagonalList = []
-        self.plotIDs = []
-        polyPartitioning = PolyPartitioning(p[0].vertices())
+        self.polyDCEL = dcel.DCEL(p[0].vertices())
+
+        polyPartitioning = PolyPartitioning(self.polyDCEL)
         self.diagonalList.extend(polyPartitioning.partitionDiagonalList)
-        self.plotIDs.extend(polyPartitioning.plotIDs)
 
         for monotonePolygon in polyPartitioning.partitions:
-            polyTriangulate = PolyTriangulate(monotonePolygon)
+            polyTriangulate = PolyTriangulate(monotonePolygon, self.polyDCEL)
             self.diagonalList.extend(polyTriangulate.monotoneDiagonalList)
-            self.plotIDs.extend(polyTriangulate.plotIDs)
 
     def clearDiagonalPlots(self):
-        for diagonalPlotID in self.plotIDs:
-            control.plot_delete(diagonalPlotID)
+        for diagonal in self.diagonalList:
+            control.plot_delete(diagonal[1])
 
 
 def triangulation(p):
     triang = Triangulation(p)
-    diagonalList = triang.diagonalList
-
     print('Diagonal List:')
-    print(diagonalList)
+    print(triang.diagonalList)

@@ -1,3 +1,4 @@
+from geocomp.common import control
 from geocomp.triangulation import triangulation
 from geocomp.triangulation.utils import dcel
 
@@ -5,19 +6,17 @@ from geocomp.triangulation.utils import dcel
 class ConvexPolyPartition():
     def __init__(self, p):
         triang = triangulation.Triangulation(p)
-        diagonalList = triang.diagonalList
         triang.clearDiagonalPlots()
-        self.dcel = dcel.DCEL(p[0].vertices())
+        self.dcel = triang.polyDCEL
         self.diagonalQueue = []
 
-        for diagonal in diagonalList:
-            self.dcel.addHalfEdge((diagonal[0].vertexNumber(),
-                                   diagonal[1].vertexNumber()))
-            diagonalPlotID = self.dcel.buildSegmentFromEdge(
-                diagonal).plot(cor="yellow")
-            self.diagonalQueue.append([diagonal, diagonalPlotID])
+        for diagonal in triang.diagonalList:
+            diagonalInit = diagonal[0][0]
+            diagonalEnd = diagonal[0][1]
+            self.diagonalQueue.append([diagonal[0], control.plot_segment(
+                diagonalInit.x, diagonalInit.y, diagonalEnd.x, diagonalEnd.y, "white")])
 
 
 def convexpolypartition(p):
     polyPart = ConvexPolyPartition(p)
-    # print(polyPart.diagonalQueue)
+    print(polyPart.diagonalQueue)

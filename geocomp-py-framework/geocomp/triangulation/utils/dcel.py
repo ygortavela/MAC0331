@@ -63,6 +63,7 @@ class HalfEdge():
 class DCEL():
     def __init__(self, points):
         self.vertex = []
+        self.mapCoordinateToNumber = {}
         self.halfEdge = {}
         self.size = len(points)
         self.__initVertex(points)
@@ -73,6 +74,8 @@ class DCEL():
             previousVertex = self.iterateVertex(i - 1)
             edge = (i, previousVertex)
             self.vertex.append(Vertex(points[i], edge))
+            x, y = points[i].x, points[i].y
+            self.mapCoordinateToNumber[(x, y)] = i
 
     def __initHalfEdgeTable(self, points):
         for i in range(self.size):
@@ -113,12 +116,12 @@ class DCEL():
 
     def addHalfEdge(self, diagonalEdge):
         revertedDiagonalEdge = self.revertEdgeVertex(diagonalEdge)
-        print('diagonal' + str(diagonalEdge))
-        print('travei no 1')
+
+        if (diagonalEdge in self.halfEdge or revertedDiagonalEdge in self.halfEdge):
+            return
+
         initIncidentEdges = self.incidentEdgesInCone(diagonalEdge)
-        print('travei no 2')
         endIncidentEdges = self.incidentEdgesInCone(revertedDiagonalEdge)
-        print('passei carai')
 
         self.halfEdge[diagonalEdge] = HalfEdge(self.vertex[diagonalEdge[0]],
                                                revertedDiagonalEdge,
@@ -175,8 +178,6 @@ class DCEL():
 
         while (self.nextEdge(self.twinEdge(halfEdge)) != startEdge):
             halfEdge = self.nextEdge(self.twinEdge(halfEdge))
-            print(startEdge)
-            print(halfEdge)
             incidentEdgesList.append(halfEdge)
 
         return incidentEdgesList
