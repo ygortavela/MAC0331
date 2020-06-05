@@ -34,9 +34,10 @@ class ConvexPolyPartition():
 
         control.sleep()
         segListOne = self.__hilightAdjacentEdges(diagonalAdjacentEdges)
-        segListTwo = self.__hilightAdjacentEdges(diagonalTwinAdjacentEdges)
         control.sleep()
         self.__unhilightAdjacentEdges(segListOne)
+        segListTwo = self.__hilightAdjacentEdges(diagonalTwinAdjacentEdges)
+        control.sleep()
         self.__unhilightAdjacentEdges(segListTwo)
 
         return self.__testReflexVertex(diagonalAdjacentEdges) or self.__testReflexVertex(diagonalTwinAdjacentEdges)
@@ -69,4 +70,4 @@ class ConvexPolyPartition():
 
 
 def convexpolypartition(p):
-    polyPart = ConvexPolyPartition(p)
+    ConvexPolyPartition(p)
