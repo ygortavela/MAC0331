@@ -13,6 +13,7 @@ Sub-modulos:
 from . import lineintersections
 from . import triangulation
 from . import convexpolypartition
+from . import convexhull
 from .common.guicontrol import init_display
 from .common.guicontrol import plot_input
 from .common.guicontrol import run_algorithm
@@ -23,6 +24,7 @@ children = (('lineintersections',  None, 'Detecção de interseção de segmento
             ('triangulation', None, 'Triangulação de Polígonos - Ygor Tavela'),
             ('convexpolypartition', None,
              'Partição de Polígonos Convexos - Rogério Fernandes & Ygor Tavela'),
+            ('convexhull', None, 'Algoritmos de Fecho Convexo - Ygor Tavela')
             )
 
 __all__ = [p[0] for p in children]

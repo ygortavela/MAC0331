@@ -26,16 +26,6 @@ class PolyPartitioning():
             suppPointId = eventVertex.coordinates.hilight(color="white")
             control.sleep()
 
-            # if ((previousVertex.y < eventVertex.y) and (eventVertex.y < nextVertex.y)) or\
-            #         ((nextVertex.y < eventVertex.y) and (eventVertex.y < previousVertex.y)) or\
-            #         ((eventVertex.y < previousVertex.y) and (eventVertex.y == nextVertex.y) and (eventVertex.x < nextVertex.x)) or\
-            #         ((eventVertex.y == previousVertex.y) and (eventVertex.y > nextVertex.y) and (eventVertex.x > previousVertex.x)):
-            #     self.__caseOne(BST, previousVertex, eventVertex, nextVertex)
-            # elif (previousVertex.y < eventVertex.y):
-            #     self.__caseTwo(BST, previousVertex, eventVertex, nextVertex)
-            # else:
-            #     self.__caseThree(BST, eventVertex)
-
             if (previousVertex.y > eventVertex.y and nextVertex.y > eventVertex.y) or\
                     (eventVertex.y == nextVertex.y and nextVertex.x < eventVertex.x and previousVertex.y > eventVertex.y) or\
                     (eventVertex.y == previousVertex.y and previousVertex.x < eventVertex.x and nextVertex.y > eventVertex.y):
