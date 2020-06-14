@@ -1,3 +1,7 @@
-def main(l):
-    print('graham')
-    print(l)
+from .convexhull import ConvexHull
+
+
+def main(pointList):
+    convexHull = ConvexHull(pointList)
+    convexHull.graham()
+    print(convexHull.convexHull)
