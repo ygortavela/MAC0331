@@ -3,7 +3,7 @@ Computational Geometry
 
 ## Implementation of geometric algorithms
 
-- Intersection detection of segments
+- Detection of segments intersection
 
 ![intersection_detection](https://user-images.githubusercontent.com/39172911/109734554-f37cf000-7b9f-11eb-8a29-8a3a894f1a19.gif)
 
@@ -15,7 +15,7 @@ Computational Geometry
 
 ![polygon_partition](https://user-images.githubusercontent.com/39172911/109734555-f37cf000-7b9f-11eb-9295-60ea65796298.gif)
 
-- Convex hull algorithm using gift wrapping and Graham algorithms
+- Convex hull using gift wrapping and Graham algorithms
 
 **Gift wrapping**:
 
